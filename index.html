@@ -4,246 +4,280 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pixel Agents</title>
-<meta name="description" content="Una banda de agentes pixel-art trabajando en su estudio de música.">
-<meta name="theme-color" content="#2b2350">
+<meta name="description" content="Un equipo de agentes pixel-art defendiendo sus servidores en pleno ataque de ciberseguridad.">
+<meta name="theme-color" content="#0b1020">
 <style>
-:root { --bg: #1b1638; --card: #2b2350; --ink: #f4f1ff; --muted: #b7aedb; --line: #3d3470; }
-:root[data-theme="light"] { --bg: #f6f3ff; --card: #fff; --ink: #2b2340; --muted: #7a7290; --line: #e7e2f5; }
+:root { --bg: #0b1020; --card: #121a30; --ink: #e6f1ff; --muted: #8fa3c7; --line: #22304f; --ok: #22c55e; --bad: #ef4444; }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body { background: var(--bg); color: var(--ink); font-family: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 main { max-width: 900px; margin: 0 auto; padding: 24px 16px 40px; }
 h1 { margin: 0 0 4px; font-size: clamp(26px, 6vw, 40px); letter-spacing: .5px; }
 .sub { margin: 0 0 20px; color: var(--muted); font-weight: 600; }
-.card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; }
-.band-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
-.band-head h2 { margin: 0; font-size: 20px; }
+.card { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; transition: border-color .2s; }
+.card.alarm { border-color: var(--bad); }
+.soc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.soc-head h2 { margin: 0; font-size: 20px; }
 .muted { color: var(--muted); font-size: 14px; font-weight: 700; }
-.band-canvas { display: block; width: 100%; height: auto; aspect-ratio: 176 / 72; image-rendering: pixelated; image-rendering: crisp-edges; border-radius: 12px; background: #2b2350; cursor: pointer; }
-.band-list { display: grid; gap: 8px; margin-top: 14px; }
-.band-row { display: flex; align-items: center; gap: 10px; font-size: 16px; min-width: 0; }
-.band-row b { white-space: nowrap; }
-.band-job { color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.band-dot { width: 10px; height: 10px; border-radius: 2px; flex: none; opacity: .35; }
-.band-row.busy .band-dot { opacity: 1; animation: band-pulse 1s infinite; }
-@keyframes band-pulse { 50% { transform: scale(1.4); } }
+canvas { display: block; width: 100%; height: auto; aspect-ratio: 176 / 72; image-rendering: pixelated; image-rendering: crisp-edges; border-radius: 12px; background: #0b1020; cursor: crosshair; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pill { background: #0b1020; border: 2px solid var(--line); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+.pill.lvl-bajo { color: var(--ok); } .pill.lvl-medio { color: #fbbf24; } .pill.lvl-alto { color: var(--bad); }
+.list { display: grid; gap: 8px; margin-top: 14px; }
+.row { display: flex; align-items: center; gap: 10px; font-size: 16px; min-width: 0; }
+.row b { white-space: nowrap; }
+.job { color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot { width: 10px; height: 10px; border-radius: 2px; flex: none; opacity: .35; }
+.row.busy .dot { opacity: 1; animation: pulse 1s infinite; }
+@keyframes pulse { 50% { transform: scale(1.4); } }
 .controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-button.btn { border: none; border-radius: 14px; padding: 12px 18px; font: inherit; font-weight: 800; background: #7c5cff; color: #fff; box-shadow: 0 4px 0 #5b3fd6; cursor: pointer; }
+button.btn { border: none; border-radius: 14px; padding: 12px 18px; font: inherit; font-weight: 800; background: #16a34a; color: #fff; box-shadow: 0 4px 0 #0f7a36; cursor: pointer; }
+button.btn.red { background: #dc2626; box-shadow: 0 4px 0 #991b1b; }
 button.btn:active { transform: translateY(3px); box-shadow: none; }
 button.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { .band-row.busy .band-dot { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .row.busy .dot { animation: none; } }
 </style>
 </head>
 <body>
 <main>
   <h1>👾 Pixel Agents</h1>
-  <p class="sub">Una banda de agentes pixel-art trabajando en su estudio. Tócalos para que suenen.</p>
-  <div id="stage"></div>
+  <p class="sub">Un equipo de ciberseguridad pixel-art defiende sus servidores en pleno ataque. Toca a un agente para que dispare.</p>
+  <div class="card" id="card">
+    <div class="soc-head"><h2>🚨 Centro de operaciones de seguridad</h2><span class="muted">¡Toca a un agente!</span></div>
+    <canvas id="cv" width="176" height="72" role="img" aria-label="Agentes pixel defendiendo los servidores de un ataque informático"></canvas>
+    <div class="stats">
+      <span class="pill" id="sBlock">🛡️ Bloqueados: 0</span>
+      <span class="pill" id="sBreach">💥 Brechas: 0</span>
+      <span class="pill lvl-bajo" id="sLevel">Amenaza: baja</span>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
   <div class="controls">
-    <button class="btn" id="party">🎉 ¡Fiesta!</button>
-    <button class="btn ghost" id="cheer">👏 Aplaudir</button>
-    <button class="btn ghost" id="oops">😅 Ups</button>
+    <button class="btn" id="counter">🛡️ Contraataque</button>
+    <button class="btn red" id="wave">🚨 Nueva oleada</button>
+    <button class="btn ghost" id="cheer">👏 Bien hecho</button>
     <button class="btn ghost" id="snd">🔊 Sonido: sí</button>
   </div>
 </main>
 <script>
 'use strict';
-const state = { sound: true };
 const rand = Math.random, rnd = n => Math.floor(rand() * n), pick = a => a[rnd(a.length)];
-function h(tag, attrs, ...kids) {
-  const el = document.createElement(tag);
-  if (attrs) for (const [k, v] of Object.entries(attrs)) {
-    if (v == null || v === false) continue;
-    if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
-    else if (k === 'style' && typeof v === 'object') { for (const [sk, sv] of Object.entries(v)) el.style.setProperty(sk, sv); }
-    else el.setAttribute(k, v === true ? '' : v);
-  }
-  for (const k of kids.flat(Infinity)) { if (k == null || k === false) continue; el.append(k.nodeType ? k : String(k)); }
-  return el;
-}
-const freq = m => 440 * 2 ** ((m - 69) / 12);
-let actx = null;
+let sound = true, actx = null;
 function audio() {
   if (!actx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; actx = new C(); }
   if (actx.state === 'suspended') actx.resume();
   return actx;
 }
-function tone(f, when, dur, vol, partials) {
-  if (!state.sound) return;
+function beep(f1, f2, when, dur, vol, type = 'square') {
+  if (!sound) return;
   const c = audio(); if (!c) return;
-  const t = c.currentTime + when, g = c.createGain();
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  g.connect(c.destination);
-  for (const [mult, amp, type] of partials) { const o = c.createOscillator(); o.type = type; o.frequency.value = f * mult; const og = c.createGain(); og.gain.value = amp; o.connect(og); og.connect(g); o.start(t); o.stop(t + dur + 0.05); }
+  const t = c.currentTime + when, g = c.createGain(), o = c.createOscillator();
+  o.type = type; o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
 }
-const PIANO = [[1, 1, 'triangle'], [2, .4, 'sine'], [3, .15, 'sine'], [4, .06, 'sine']];
-const playNote = (m, when = 0, dur = 1.3) => tone(freq(m), when, dur, 0.32, PIANO);
-function playSeq(seq, gap = 0.42) { seq.forEach((n, i) => [].concat(n).forEach(m => playNote(m, i * gap))); }
+const sfx = {
+  zap: () => beep(1400, 220, 0, .12, .05),
+  pop: () => beep(300, 60, 0, .15, .06, 'sawtooth'),
+  breach: () => { beep(160, 90, 0, .35, .12, 'sawtooth'); },
+  alarm: () => { for (let i = 0; i < 3; i++) { beep(880, 880, i * .4, .18, .08); beep(620, 620, i * .4 + .2, .18, .08); } },
+  win: () => [523, 659, 784, 1046].forEach((f, i) => beep(f, f, i * .1, .25, .08, 'triangle')),
+  ok: () => { beep(880, 880, 0, .12, .07, 'sine'); beep(1318, 1318, .08, .2, .07, 'sine'); },
+};
 
-// ---------------- Banda pixel: agentes pixel-art que trabajan en el estudio ----------------
-const BAND = [
-  { name: 'Pía', icon: '🎹', role: 'piano', hair: '#3b2a1a', skin: '#f5c9a0', shirt: '#7c5cff',
-    jobs: () => ['Preparando la próxima canción', 'Afinando el piano', 'Practicando escalas', 'Ordenando partituras'] },
-  { name: 'Toto', icon: '🥁', role: 'drums', hair: '#e2683c', skin: '#e0a878', shirt: '#22c55e',
-    jobs: () => ['Marcando el ritmo', 'Probando un redoble', 'Puliendo los platillos', 'Contando 1, 2, 3, 4…'] },
-  { name: 'Lula', icon: '🎸', role: 'guitar', hair: '#1f1b2e', skin: '#c68a5e', shirt: '#ec4899',
-    jobs: () => ['Componiendo una canción', 'Cambiando una cuerda', 'Inventando un solo', 'Buscando acordes nuevos'] },
-  { name: 'Coro', icon: '🎤', role: 'voice', hair: '#f4c542', skin: '#f2d1b3', shirt: '#0ea5e9',
-    jobs: () => ['Escribiendo la letra', 'Calentando la voz', 'Haciendo coros', 'Ensayando «Estrellita»'] },
+// ---------- Agentes ----------
+const AGENTS = [
+  { name: 'Ana', icon: '🛡️', gear: 'headset', hair: '#3b2a1a', skin: '#f5c9a0', shirt: '#2563eb', beam: '#38bdf8',
+    jobs: ['Bloqueando la IP 203.0.113.7', 'Cerrando puertos abiertos', 'Actualizando reglas del firewall', 'Frenando un ataque DDoS'] },
+  { name: 'Beto', icon: '🔍', gear: 'glasses', hair: '#e2683c', skin: '#e0a878', shirt: '#16a34a', beam: '#4ade80',
+    jobs: ['Analizando el malware', 'Revisando registros sospechosos', 'Rastreando al intruso', 'Aislando el virus en una caja de arena'] },
+  { name: 'Cami', icon: '💾', gear: 'cap', hair: '#1f1b2e', skin: '#c68a5e', shirt: '#9333ea', beam: '#c084fc',
+    jobs: ['Restaurando copias de seguridad', 'Parcheando los servidores', 'Cambiando contraseñas', 'Verificando que todo funcione'] },
+  { name: 'Dani', icon: '📡', gear: 'hood', hair: '#f4c542', skin: '#f2d1b3', shirt: '#475569', beam: '#facc15',
+    jobs: ['Aislando el equipo infectado', 'Avisando al equipo de guardia', 'Coordinando la defensa', 'Escribiendo el informe del incidente'] },
 ];
-const BAND_W = 176, BAND_H = 72, FLOOR = 56;
-function bandPlay(role) {
-  if (role === 'piano') playSeq([60, 64, 67, 72], 0.12);
-  else if (role === 'drums') { tone(80, 0, .28, .45, [[1, 1, 'sine']]); tone(320, .18, .1, .12, [[1, 1, 'square'], [1.41, .6, 'square']]); tone(80, .36, .28, .45, [[1, 1, 'sine']]); }
-  else if (role === 'guitar') [55, 59, 62, 67, 71].forEach((m, i) => tone(freq(m), i * .035, 1.4, .1, [[1, 1, 'triangle'], [2, .5, 'sine'], [3, .25, 'sine']]));
-  else [72, 74, 76, 79].forEach((m, i) => tone(freq(m), i * .22, .3, .16, [[1, 1, 'sine'], [2, .1, 'sine']]));
+const W = 176, H = 72, FLOOR = 56, RACK_X = 14;
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const card = document.getElementById('card');
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+const slots = AGENTS.map((a, i) => ({ ...a, cx: 34 + i * 36, busy: true, job: 0, jump: -1e9, sad: 0, blink: rnd(4000), cool: 0 }));
+let bugs = [], sparks = [], beams = [], blocked = 0, breaches = 0, alarm = 0, frenzy = 0, nextSpawn = 0;
+const r = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, hh); };
+function line(x1, y1, x2, y2, c) {
+  const n = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) | 0;
+  for (let i = 0; i <= n; i++) r(x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n, 1, 1, c);
 }
-function pixelBand({ compact = false, mood = null } = {}) {
-  const ctxInfo = () => ({});
-  const cv = h('canvas', { class: 'band-canvas' + (compact ? ' compact' : ''), width: BAND_W, height: BAND_H, role: 'img', 'aria-label': 'La banda pixel trabajando en el estudio' });
-  const g = cv.getContext('2d');
-  const slots = BAND.map((a, i) => ({ ...a, cx: 22 + i * 44, busy: true, job: 0, jump: -1e9, notes: [], blink: rnd(4000), sad: mood === 'sad' ? Infinity : 0 }));
-  const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let party = 0;
-  const r = (x, y, w, hh, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, hh); };
-  const addNote = (s, n = 1) => { for (let k = 0; k < n; k++) s.notes.push({ x: s.cx - 2 + rnd(10) - 3, y: FLOOR - 22, vx: (rand() - .5) * .25, life: 1, c: pick(['#fbbf24', '#f9a8d4', '#a5f3fc', '#c4b5fd', '#86efac']) }); };
+function spawn(n = 1) {
+  for (let k = 0; k < n; k++) bugs.push({ x: W + 4 + k * 9, y: 8 + rnd(34), vx: -(0.18 + rand() * 0.2), ph: rand() * 6, kind: rnd(3) });
+}
 
-  function scene(t) {
-    r(0, 0, BAND_W, FLOOR, '#2b2350');
-    for (let x = 0; x < BAND_W; x += 8) r(x, 0, 1, FLOOR, '#2f2757');
-    // guirnalda de luces
-    for (let x = 6; x < BAND_W; x += 12) { const y = 4 + Math.round(Math.sin(x / 18) * 2); r(x, y, 2, 2, (Math.floor(t / 400) + x / 12) % 3 < 1 ? '#fbbf24' : (x / 12 % 2 ? '#f472b6' : '#60a5fa')); }
-    // ventana con luna y póster
-    r(10, 14, 22, 16, '#1b1638'); r(11, 15, 20, 14, '#3b4a8c'); r(25, 17, 3, 3, '#fef3c7'); r(20, 15, 1, 14, '#1b1638'); r(11, 21, 20, 1, '#1b1638');
-    r(140, 13, 22, 18, '#f9a8d4'); r(142, 15, 18, 14, '#fdf2f8');
-    r(149, 18, 1, 7, '#7c5cff'); r(147, 24, 3, 2, '#7c5cff'); r(150, 18, 3, 1, '#7c5cff'); r(153, 18, 1, 6, '#7c5cff'); r(151, 23, 3, 2, '#7c5cff');
-    // letrero
-    r(62, 12, 52, 11, '#14102a'); 
-    const on = Math.floor(t / 700) % 4 !== 0;
-    'PIXELS'.split('').forEach((ch, i) => r(68 + i * 7, 15, 5, 5, on ? ['#f472b6', '#fbbf24', '#86efac', '#60a5fa', '#c4b5fd', '#f472b6', '#fbbf24'][i] : '#3a3160'));
-    // piso
-    r(0, FLOOR, BAND_W, BAND_H - FLOOR, '#8b5a3c');
-    for (let y = FLOOR + 4; y < BAND_H; y += 5) r(0, y, BAND_W, 1, '#7a4d32');
-    r(0, FLOOR, BAND_W, 1, '#5c3a26');
-    r(8, FLOOR + 6, BAND_W - 16, 8, '#7c3aed'); r(10, FLOOR + 8, BAND_W - 20, 4, '#8b5cf6');
+function scene(t) {
+  r(0, 0, W, FLOOR, '#111a33');
+  for (let x = 0; x < W; x += 8) r(x, 0, 1, FLOOR, '#141f3b');
+  // pantalla gigante con el mapa de amenazas
+  r(46, 4, 84, 26, '#0a2a1f'); r(47, 5, 82, 24, '#052016');
+  for (let x = 51; x < 129; x += 8) r(x, 5, 1, 24, '#0b3324');
+  for (let y = 9; y < 29; y += 6) r(47, y, 82, 1, '#0b3324');
+  [[55, 11, 10, 5], [70, 9, 14, 7], [88, 14, 8, 6], [100, 9, 16, 8], [112, 19, 8, 5], [62, 20, 7, 5]].forEach(([x, y, w, hh]) => r(x, y, w, hh, '#14532d'));
+  for (let i = 0; i < 5; i++) { const on = (Math.floor(t / 250) + i * 3) % 5 < 2; if (on) r(56 + i * 15, 12 + (i * 7) % 12, 2, 2, '#ef4444'); }
+  const lvl = Math.min(1, bugs.length / 10);
+  r(48, 27, 80, 1, '#0b3324'); r(48, 27, Math.max(2, Math.round(80 * lvl)), 1, lvl > .6 ? '#ef4444' : lvl > .3 ? '#fbbf24' : '#22c55e');
+  // sirena
+  const siren = t < alarm && Math.floor(t / 150) % 2;
+  r(150, 0, 8, 2, '#374151'); r(151, 2, 6, 3, siren ? '#ff3b3b' : '#5b1a1a');
+  if (siren) { r(146, 3, 3, 1, '#ff3b3b'); r(159, 3, 3, 1, '#ff3b3b'); }
+  // rack de servidores (lo que hay que proteger)
+  const hit = t < alarm && Math.floor(t / 100) % 2;
+  r(2, 14, 12, FLOOR - 14, hit ? '#7f1d1d' : '#1f2937'); r(3, 15, 10, FLOOR - 16, '#0f172a');
+  for (let y = 17; y < FLOOR - 2; y += 5) {
+    r(4, y, 8, 3, '#1e293b');
+    r(5, y + 1, 1, 1, (Math.floor(t / 90) + y) % 4 ? '#22c55e' : '#0f3d22');
+    r(7, y + 1, 1, 1, (Math.floor(t / 130) + y) % 3 ? '#38bdf8' : '#0c3550');
+    r(10, y + 1, 1, 1, hit ? '#ef4444' : '#334155');
   }
+  // escudo/firewall delante del rack
+  const sh = 0.35 + 0.25 * Math.sin(t / 200);
+  g.globalAlpha = sh; r(RACK_X + 2, 10, 1, FLOOR - 10, '#38bdf8'); g.globalAlpha = 1;
+  // piso
+  r(0, FLOOR, W, H - FLOOR, '#1e293b');
+  for (let x = 0; x < W; x += 12) r(x, FLOOR, 1, H - FLOOR, '#172033');
+  r(0, FLOOR, W, 1, '#0f172a');
+  for (let x = 20; x < W; x += 16) r(x, FLOOR + 9, 8, 1, '#0b1222');
+}
 
-  function person(s, b, dy, t) {
-    const x = s.cx, sad = t < s.sad, blink = (t + s.blink) % 4000 < 140;
-    r(x - 3, b - 4 + dy, 2, 4, '#2b2340'); r(x + 1, b - 4 + dy, 2, 4, '#2b2340');
-    r(x - 4, b - 11 + dy, 8, 7, s.shirt); r(x - 4, b - 5 + dy, 8, 1, '#00000033');
-    r(x - 3, b - 17 + dy, 6, 6, s.skin);
-    r(x - 3, b - 18 + dy, 6, 2, s.hair); r(x - 4, b - 17 + dy, 1, 3, s.hair); r(x + 3, b - 17 + dy, 1, 3, s.hair);
-    if (sad) { r(x - 2, b - 15 + dy, 1, 1, '#1b1530'); r(x + 1, b - 15 + dy, 1, 1, '#1b1530'); r(x - 1, b - 12 + dy, 2, 1, '#7f1d1d'); r(x + 4, b - 18 + dy + (Math.floor(t / 300) % 2), 1, 2, '#7dd3fc'); }
-    else if (!blink) { r(x - 2, b - 15 + dy, 1, 2, '#1b1530'); r(x + 1, b - 15 + dy, 1, 2, '#1b1530'); }
-    else { r(x - 2, b - 14 + dy, 1, 1, '#1b1530'); r(x + 1, b - 14 + dy, 1, 1, '#1b1530'); }
-    r(x - 3, b - 13 + dy, 1, 1, '#f8a5a5'); r(x + 2, b - 13 + dy, 1, 1, '#f8a5a5');
+function agent(s, t, dt) {
+  const b = FLOOR + 2, x = s.cx;
+  const jp = (t - s.jump) / 450;
+  const dy = jp >= 0 && jp < 1 ? -Math.round(Math.sin(Math.PI * jp) * 7) : 0;
+  const sad = t < s.sad, active = (s.busy || t < frenzy) && !sad;
+  const f = active ? Math.floor(t / 110 + x) % 2 : 0;
+  const blink = (t + s.blink) % 4000 < 140;
+  // silla
+  r(x - 5, b - 9, 10, 1, '#0f172a'); r(x - 1, b - 8, 2, 6, '#0f172a'); r(x - 4, b - 2, 8, 1, '#0f172a');
+  // cuerpo
+  r(x - 4, b - 11 + dy, 8, 7, s.shirt);
+  r(x - 3, b - 17 + dy, 6, 6, s.skin);
+  if (s.gear === 'hood') { r(x - 4, b - 18 + dy, 8, 2, s.shirt); r(x - 4, b - 17 + dy, 1, 5, s.shirt); r(x + 3, b - 17 + dy, 1, 5, s.shirt); r(x - 2, b - 18 + dy, 4, 1, s.hair); }
+  else { r(x - 3, b - 18 + dy, 6, 2, s.hair); r(x - 4, b - 17 + dy, 1, 3, s.hair); r(x + 3, b - 17 + dy, 1, 3, s.hair); }
+  if (s.gear === 'cap') { r(x - 4, b - 19 + dy, 8, 2, '#f97316'); r(x + 3, b - 18 + dy, 3, 1, '#f97316'); }
+  if (sad) { r(x - 2, b - 15 + dy, 1, 1, '#0b1020'); r(x + 1, b - 15 + dy, 1, 1, '#0b1020'); r(x + 4, b - 18 + dy + (Math.floor(t / 300) % 2), 1, 2, '#7dd3fc'); }
+  else if (!blink) { r(x - 2, b - 15 + dy, 1, 2, '#0b1020'); r(x + 1, b - 15 + dy, 1, 2, '#0b1020'); }
+  else { r(x - 2, b - 14 + dy, 1, 1, '#0b1020'); r(x + 1, b - 14 + dy, 1, 1, '#0b1020'); }
+  if (s.gear === 'glasses') { r(x - 3, b - 15 + dy, 6, 1, '#111827'); r(x - 2, b - 15 + dy, 1, 1, '#93c5fd'); r(x + 1, b - 15 + dy, 1, 1, '#93c5fd'); }
+  if (s.gear === 'headset') { r(x - 4, b - 19 + dy, 8, 1, '#111827'); r(x - 5, b - 16 + dy, 2, 3, '#111827'); r(x + 3, b - 16 + dy, 2, 3, '#111827'); r(x - 4, b - 13 + dy, 3, 1, '#111827'); }
+  // brillo de la pantalla en la cara
+  if (active) { g.globalAlpha = .25; r(x - 3, b - 13 + dy, 6, 2, s.beam); g.globalAlpha = 1; }
+  // escritorio y laptop (vista de espaldas)
+  r(x - 10, b - 8, 20, 2, '#334155'); r(x - 9, b - 6, 1, 6, '#1e293b'); r(x + 8, b - 6, 1, 6, '#1e293b');
+  r(x - 5, b - 13, 10, 5, '#9ca3af'); r(x - 4, b - 12, 8, 3, '#cbd5e1'); r(x - 1, b - 11, 2, 1, s.beam);
+  // manos tecleando
+  r(x - 7, b - 10 - (f ? 1 : 0), 2, 2, s.skin); r(x + 5, b - 10 - (f ? 0 : 1), 2, 2, s.skin);
+  // taza de café
+  if (s.gear === 'cap' || s.gear === 'glasses') { r(x + 6, b - 11, 2, 3, '#f8fafc'); r(x + 8, b - 10, 1, 1, '#f8fafc'); }
+  if (!active && !sad) {
+    const k = Math.floor(t / 300) % 4;
+    r(x - 4, b - 28, 9, 5, '#e2e8f0'); r(x - 1, b - 23, 2, 1, '#e2e8f0');
+    for (let d = 0; d < 3; d++) r(x - 2 + d * 2, b - 26, 1, 1, d < k ? '#0b1020' : '#94a3b8');
   }
+  // disparo
+  s.cool -= dt;
+  if (active && bugs.length && s.cool <= 0 && rand() < (t < frenzy ? .25 : .02) * dt) fire(s, t);
+}
+function fire(s, t) {
+  if (!bugs.length) return;
+  const target = bugs.reduce((a, bg) => (bg.x < a.x ? bg : a));
+  const x1 = s.cx, y1 = FLOOR - 13;
+  beams.push({ x1, y1, x2: target.x + 2, y2: target.y + 2, c: s.beam, until: t + 110 });
+  boom(target, s.beam);
+  bugs = bugs.filter(b => b !== target);
+  blocked++; s.cool = t < frenzy ? 4 : 25; sfx.zap(); stats();
+}
+function boom(bg, c) {
+  for (let i = 0; i < 8; i++) sparks.push({ x: bg.x + 2, y: bg.y + 2, vx: (rand() - .5) * 1.4, vy: (rand() - .5) * 1.4, life: 1, c: i % 2 ? c : '#ef4444' });
+}
+function drawBug(bg, t) {
+  const x = bg.x, y = bg.y + Math.round(Math.sin(t / 200 + bg.ph) * 1.5), lg = Math.floor(t / 120 + bg.ph) % 2;
+  const body = ['#ef4444', '#f97316', '#e11d48'][bg.kind];
+  r(x, y + 1, 5, 3, body); r(x + 1, y, 3, 1, body);
+  r(x + 1, y + 1, 1, 1, '#fff'); r(x + 3, y + 1, 1, 1, '#fff');
+  r(x - 1, y + (lg ? 1 : 3), 1, 1, body); r(x + 5, y + (lg ? 3 : 1), 1, 1, body);
+  r(x + 1, y + 4, 1, 1, '#7f1d1d'); r(x + 3, y + 4, 1, 1, '#7f1d1d');
+}
 
-  function agent(s, t) {
-    const b = FLOOR + 2, x = s.cx;
-    const jp = (t - s.jump) / 450;
-    const dy = jp >= 0 && jp < 1 ? -Math.round(Math.sin(Math.PI * jp) * 7) : 0;
-    const sad = t < s.sad;
-    const play = (s.busy || t < party) && !sad;
-    const f = play ? Math.floor(t / 170 + s.cx) % 2 : 0;
-    if (s.role === 'piano') {
-      person(s, b, dy, t);
-      r(x - 5, b - 9 + dy - (f ? 1 : 0), 2, 2, s.skin); r(x + 3, b - 9 + dy - (f ? 0 : 1), 2, 2, s.skin);
-      r(x - 9, b - 8, 18, 2, '#1b1530'); r(x - 8, b - 7, 16, 2, '#fff');
-      for (const k of [-6, -4, -1, 1, 3, 6]) r(x + k, b - 7, 1, 1, '#1b1530');
-      r(x - 8, b - 5, 1, 5, '#4b4466'); r(x + 7, b - 5, 1, 5, '#4b4466');
-    } else if (s.role === 'drums') {
-      person(s, b, dy, t);
-      r(x + 6, b - 15, 1, 15, '#9ca3af'); r(x + 3, b - 16 + (play && f ? 1 : 0), 7, 1, '#fbbf24');
-      r(x - 6, b - 7, 11, 1, '#e5e7eb'); r(x - 6, b - 6, 11, 4, '#ef4444'); r(x - 6, b - 4, 11, 1, '#fca5a5'); r(x - 4, b - 2, 1, 2, '#9ca3af'); r(x + 2, b - 2, 1, 2, '#9ca3af');
-      const up = play ? (f ? 3 : 0) : 1, up2 = play ? (f ? 0 : 3) : 1;
-      r(x - 5, b - 9 + dy, 2, 2, s.skin); r(x - 4, b - 11 + dy - up, 1, 3, '#d6b07a');
-      r(x + 3, b - 9 + dy, 2, 2, s.skin); r(x + 4, b - 11 + dy - up2, 1, 3, '#d6b07a');
-    } else if (s.role === 'guitar') {
-      person(s, b, dy, t);
-      r(x - 9, b - 11 + dy, 7, 1, '#7c3f12'); r(x - 10, b - 12 + dy, 2, 2, '#4a2208');
-      r(x - 3, b - 10 + dy, 7, 5, '#d97706'); r(x - 2, b - 9 + dy, 5, 3, '#b45309'); r(x, b - 8 + dy, 1, 1, '#3b1d06');
-      r(x - 7, b - 12 + dy, 2, 2, s.skin); r(x + 2, b - 9 + dy + (f ? 2 : 0), 2, 2, s.skin);
-    } else {
-      person(s, b, dy, t);
-      const open = play && f;
-      r(x - 1, b - 13 + dy, 2, open ? 2 : 1, '#7f1d1d');
-      r(x + 7, b - 14, 1, 14, '#6b7280'); r(x + 5, b - 2, 5, 1, '#6b7280');
-      r(x + 6, b - 17, 3, 3, '#374151'); r(x + 6, b - 17, 3, 1, '#9ca3af');
-      r(x + 4, b - 13 + dy, 2, 2, s.skin); r(x - 5, b - 10 + dy, 1, 4, s.shirt); r(x - 5, b - 6 + dy, 1, 1, s.skin);
-    }
-    if (!play && !sad) { // pensando la próxima tarea
-      const k = Math.floor(t / 300) % 4;
-      r(x - 4, b - 27, 9, 5, '#fff'); r(x - 1, b - 22, 2, 1, '#fff');
-      for (let d = 0; d < 3; d++) r(x - 2 + d * 2, b - 25, 1, 1, d < k ? '#2b2340' : '#c9c3dc');
-    }
-    if (play && rand() < (t < party ? 0.12 : 0.025)) addNote(s);
-    s.notes = s.notes.filter(n => (n.life -= 0.012) > 0);
-    for (const n of s.notes) {
-      n.y -= 0.35; n.x += n.vx + Math.sin((n.y + s.cx) / 4) * 0.12;
-      if (n.life > .15 || Math.floor(t / 60) % 2) { r(n.x, n.y + 3, 2, 2, n.c); r(n.x + 1, n.y, 1, 3, n.c); r(n.x + 2, n.y, 1, 1, n.c); }
-    }
+let last = 0;
+function frame(t) {
+  requestAnimationFrame(frame);
+  if (reduce && t - last < 400) return;
+  const dt = last ? Math.min(3, (t - last) / 16.7) : 1;
+  last = t;
+  if (t > nextSpawn) { spawn(rand() < .2 ? 2 : 1); nextSpawn = t + 1300 + rnd(1400); }
+  for (const bg of bugs) bg.x += bg.vx * dt;
+  const through = bugs.filter(bg => bg.x < RACK_X + 2);
+  if (through.length) {
+    bugs = bugs.filter(bg => bg.x >= RACK_X + 2);
+    breaches += through.length; through.forEach(bg => boom(bg, '#fbbf24'));
+    if (t > alarm) sfx.breach();
+    alarm = t + 1500; stats();
   }
+  scene(t);
+  slots.forEach(s => agent(s, t, dt));
+  bugs.forEach(bg => drawBug(bg, t));
+  beams = beams.filter(bm => bm.until > t);
+  beams.forEach(bm => line(bm.x1, bm.y1, bm.x2, bm.y2, bm.c));
+  sparks = sparks.filter(p => (p.life -= .035 * dt) > 0);
+  sparks.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; r(p.x, p.y, 1, 1, p.c); });
+  if (t < alarm && Math.floor(t / 150) % 2) { g.globalAlpha = .12; r(0, 0, W, H, '#ff0000'); g.globalAlpha = 1; }
+  card.classList.toggle('alarm', t < alarm);
+  if (t < frenzy && Math.floor(t / 450) !== Math.floor((t - 16.7 * dt) / 450)) slots.forEach((s, i) => { s.jump = t + i * 70; });
+}
+requestAnimationFrame(frame);
 
-  let last = 0, raf = 0;
-  function frame(t) {
-    if (!cv.isConnected && last) return;
-    raf = requestAnimationFrame(frame);
-    if (reduce && t - last < 400) return;
-    last = t || 1;
-    scene(t); slots.forEach(s => agent(s, t));
-    if (t < party && Math.floor(t / 450) !== Math.floor((t - 20) / 450)) slots.forEach((s, i) => { s.jump = t + i * 70; });
-  }
-  raf = requestAnimationFrame(frame);
-
-  const now = () => performance.now();
-  function react(kind) {
-    const t = now();
-    if (kind === 'ok') slots.forEach((s, i) => { s.jump = t + i * 80; s.sad = 0; addNote(s, 2); });
-    else if (kind === 'bad') slots.forEach(s => { s.sad = t + 1600; });
-    else if (kind === 'win') { party = t + 3200; slots.forEach((s, i) => { s.sad = 0; s.jump = t + i * 80; addNote(s, 4); }); }
-  }
-  cv.addEventListener('click', e => {
-    const rect = cv.getBoundingClientRect();
-    const i = Math.max(0, Math.min(3, Math.floor((e.clientX - rect.left) / rect.width * 4)));
-    const s = slots[i]; s.jump = now(); s.busy = true; s.sad = mood === 'sad' ? s.sad : 0; addNote(s, 5); bandPlay(s.role);
-    if (rows[i]) { s.job = (s.job + 1) % s.jobs(ctxInfo()).length; paint(); }
+// ---------- Panel ----------
+const $ = id => document.getElementById(id);
+function stats() {
+  $('sBlock').textContent = '🛡️ Bloqueados: ' + blocked;
+  $('sBreach').textContent = '💥 Brechas: ' + breaches;
+  const n = bugs.length, lvl = n > 6 ? 'alto' : n > 2 ? 'medio' : 'bajo';
+  $('sLevel').textContent = 'Amenaza: ' + (lvl === 'bajo' ? 'baja' : lvl === 'medio' ? 'media' : 'alta');
+  $('sLevel').className = 'pill lvl-' + lvl;
+}
+setInterval(stats, 500);
+const rows = slots.map(s => {
+  const row = document.createElement('div');
+  row.innerHTML = '<span class="dot"></span><b></b><span class="job"></span>';
+  row.querySelector('.dot').style.background = s.shirt;
+  row.querySelector('b').textContent = `${s.icon} ${s.name}`;
+  $('list').append(row);
+  return row;
+});
+function paint() {
+  slots.forEach((s, i) => {
+    rows[i].className = 'row' + (s.busy ? ' busy' : '');
+    rows[i].lastChild.textContent = s.busy ? s.jobs[s.job] : 'Esperando la próxima alerta…';
   });
-
-  let rows = [];
-  const paint = () => {
-    const c = ctxInfo();
-    slots.forEach((s, i) => {
-      if (!rows[i]) return;
-      rows[i].className = 'band-row' + (s.busy ? ' busy' : '');
-      rows[i].lastChild.textContent = s.busy ? s.jobs(c)[s.job] : 'Pensando la próxima tarea…';
-    });
-  };
-  if (compact) return { el: cv, react };
-
-  rows = slots.map(s => h('div', { class: 'band-row' }, h('span', { class: 'band-dot', style: { background: s.shirt } }), h('b', {}, `${s.icon} ${s.name}`), h('span', { class: 'band-job' })));
-  paint();
-  const timer = setInterval(() => {
-    if (!cv.isConnected) return clearInterval(timer);
-    const s = pick(slots);
-    if (s.busy && rand() < .35) s.busy = false;
-    else { s.busy = true; s.job = (s.job + 1) % s.jobs(ctxInfo()).length; }
-    paint();
-  }, 2600);
-  const el = h('div', { class: 'card' },
-    h('div', { class: 'band-head' }, h('h2', {}, '🎛️ El estudio'), h('span', { class: 'muted' }, '¡Toca a un músico!')),
-    cv, h('div', { class: 'band-list' }, rows));
-  return { el, react };
 }
+paint();
+setInterval(() => {
+  const s = pick(slots);
+  if (s.busy && rand() < .3) s.busy = false;
+  else { s.busy = true; s.job = (s.job + 1) % s.jobs.length; }
+  paint();
+}, 2600);
 
-const band = pixelBand();
-document.getElementById('stage').append(band.el);
-document.getElementById('party').onclick = () => { band.react('win'); [72, 76, 79, 84].forEach((m, i) => tone(freq(m), i * .12, .5, .2, [[1, 1, 'triangle'], [2, .3, 'sine']])); };
-document.getElementById('cheer').onclick = () => { band.react('ok'); tone(880, 0, .18, .18, [[1, 1, 'sine']]); tone(1318.5, .09, .3, .18, [[1, 1, 'sine']]); };
-document.getElementById('oops').onclick = () => { band.react('bad'); tone(196, 0, .28, .14, [[1, 1, 'square']]); tone(155, .12, .3, .12, [[1, 1, 'square']]); };
-const snd = document.getElementById('snd');
-snd.onclick = () => { state.sound = !state.sound; snd.textContent = state.sound ? '🔊 Sonido: sí' : '🔇 Sonido: no'; };
+const now = () => performance.now();
+cv.addEventListener('click', e => {
+  const rect = cv.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / rect.width * W;
+  const s = slots.reduce((a, b) => Math.abs(b.cx - px) < Math.abs(a.cx - px) ? b : a);
+  s.jump = now(); s.busy = true; s.sad = 0; s.job = (s.job + 1) % s.jobs.length; s.cool = 0;
+  if (bugs.length) fire(s, now()); else sfx.ok();
+  paint();
+});
+$('counter').onclick = () => { const t = now(); frenzy = t + 3000; slots.forEach((s, i) => { s.busy = true; s.sad = 0; s.cool = 0; s.jump = t + i * 80; }); paint(); sfx.win(); };
+$('wave').onclick = () => { const t = now(); spawn(9); alarm = t + 2500; slots.forEach(s => { s.sad = t + 1400; }); sfx.alarm(); stats(); };
+$('cheer').onclick = () => { const t = now(); slots.forEach((s, i) => { s.jump = t + i * 80; s.sad = 0; }); sfx.ok(); };
+$('snd').onclick = () => { sound = !sound; $('snd').textContent = sound ? '🔊 Sonido: sí' : '🔇 Sonido: no'; };
+document.addEventListener('pointerdown', () => audio(), { once: true });
 </script>
 </body>
 </html>
